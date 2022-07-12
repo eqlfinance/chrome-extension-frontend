@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Extension Popup</title>
+        <style>
+            :root {
+                --white: #FFFFFF;
+                --black: #000000;
+                --green: #0B9A70;
+                --darkgray: #3D3E3F;
+                --lightgray: #D9D9D9;
+
+                --incorrect: #c51717;
+
+                --darkbackground: #1B1B1B;
+                --loginbuttoncolor: #36383F;
+                --loginbuttonhightlight: #868686;
+                --forgotcolor: #BDBDBE;
+            }
+
+            body {
+                background: none;
+                margin: unset;
+            }
+
+            p{
+                margin: 0;
+            }
+
+            .main{
+                width: 360px;
+                /* min-height: 183px; */
+                display: flex;
+                flex-direction:column;
+                
+                text-align: center;
+                justify-content: center;
+            }
+            
+            /*Top display*/
+            .top{
+                height: 53px;
+                display: flex;
+                border-bottom: 1px solid#E9E8E8;
+                background-color: var(--darkbackground);
+            }
+
+            .eqlimg{
+                margin: 10px;
+                width: 50px;
+                align-self: center;
+            }
+
+            .eqlimg:hover{
+                cursor: pointer;
+            }
+
+            .close{
+                font-size: 20px;
+                color: var(--white);
+                opacity: 50%;
+                align-self: center;
+                margin-left: auto;
+                margin-right: 17px;  
+            }
+
+            .close:hover{
+                opacity: 100%;
+                cursor: pointer;
+            }
+
+            /*Middle display*/
+            .middle{
+                min-height: 100px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+                align-items: center;
+                background-color: var(--darkbackground);
+                /* border-bottom: 1px solid var(--lightgray); */
+            }
+
+            .coupon{
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                height: 50px;
+                border-bottom: 1px solid var(--darkgray);
+                color: var(--white);
+                font-size: 14px;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                overflow: scroll;
+            }
+
+            .coupon:hover{
+                background-color: var(--lightgray);
+                cursor: pointer;
+            }
+
+            .noborder{
+                color: var(--white);
+                font-size: 18px;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                border: none;
+            }
+
+            .noborder:hover{
+                background-color: var(--darkbackground);
+                cursor:unset;
+            }
+
+            .login{
+                margin-top: 37px;
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                margin-bottom: auto;
+                justify-content: center;
+                text-align: center;
+                align-items: center;
+            }
+
+            .inputholder{
+                border: 1px solid#BDBDBE;
+                border-radius: 4px;
+                width: 304px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .inputtext{
+                display: flex;
+                color: var(--darkgray);
+                margin: 0;
+                margin-left: 8px;
+                margin-top: 9px;
+                align-self: baseline;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+            }
+
+            .input{
+                text-align: start;
+                font-size: 16px;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                background-color: var(--darkbackground);
+                color: var(--white);
+                border: none;
+                outline: 0;
+                width: 96%;
+                /* margin-left: 2px; */
+            }
+
+            .password-holder{
+                width: 98%; 
+                display: flex; 
+                flex-direction: row; 
+                height: 24px;
+            }
+
+            .eye{
+                height: 22px;
+                filter: invert(75%);
+            }
+
+            .eye:hover{
+                height: 24px;
+                filter: invert(100%);
+            }
+
+            .underfields{
+                display: flex;
+                flex-direction: row;
+                margin-bottom: 25px;
+                width: 83%;
+                justify-content: space-between;
+            }
+
+            #forgotForm{
+                display: none;
+            }
+
+            .forgot{
+                color: var(--forgotcolor);
+                font-size: 12px;
+                cursor: pointer;
+            }
+
+            .forgot:hover{
+                color: var(--white);
+                font-size: 13px;
+                cursor: pointer;
+            }
+
+            .forgot-title{
+                color: var(--white);
+                font-size: 16px;
+                margin: 0;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                margin-top: 28px;
+                margin-bottom: 26px;
+            }
+
+            .check{
+                width: 40px;
+                font-size: 20px;
+                margin: 0;
+                visibility: hidden;
+            }
+
+            .incorrect{
+                color: var(--incorrect);
+                font-size: 12px;
+                margin: 0;
+                display: none;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+            }
+
+            #post-login{
+                display: none;
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                background-color: var(--darkbackground);
+                color: var(--white);
+            }
+
+            .post-login-img{
+                height: 35px;
+            }
+
+            .post-login-text{
+                margin: 0;
+                color: var(--white);
+                font-size: 16px;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+            }
+
+            /* EQL Offfer Display */
+            #eql-offer-display{
+                width: 100%;
+                display: none;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+
+            #eql-no-offers{
+                width: 100%;
+
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+
+                background-color: var(--darkbackground);
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                font-size: 16px;
+                color: var(--white);
+
+                margin-top: 20px;
+                margin-bottom: 30px;
+            }
+
+            .eql-offer{
+                width: 100%;
+
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+
+                background-color: var(--darkbackground);
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                font-size: 16px;
+                color: var(--white);
+            }
+
+            .eql-offer:hover{
+                background-color: var(--darkgray);
+                font-family: 'Gilroy-Semibold', Helvetica, sans-serif !important;
+                font-size: 17px;
+            }
+
+            .eql-offer p#title {
+                margin-top: 20px;
+            }
+
+            .eql-offer p#code {
+                margin-top: 5px;
+                margin-bottom: 10px;
+
+                font-size: 14px;
+                color: var(--forgotcolor);
+            }
+
+            .eql-offer p#inst {
+                display: none;
+                margin-bottom: 5px;
+
+                font-size: 12px;
+                color: var(--forgotcolor);
+            }
+
+            /*Bottom display*/
+            .bottom{
+                background-color: var(--darkbackground);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+            }
+
+            .eqlbtn{
+                border: none;
+                background-color: var(--green);
+                width: 100%;
+                height: 50px;
+                cursor: pointer;
+                color: var(--lightgray);
+                font-size: 14px;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+            }
+
+            .eqlbtn:hover{
+                color: var(--white);
+                font-size: 16px;
+            }
+
+            .login-button-holder{
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+            }
+
+            .login-button{
+                border: none;
+                width: 304px;
+                height: 42px;
+                border-radius: 57px;
+                background-color: var(--loginbuttoncolor);
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                font-size: 14px;
+                color: var(--white);
+                margin-bottom: 17px;
+            }
+
+            .login-button:hover{
+                background-color: var(--loginbuttonhightlight);
+            }
+
+            .signup-button{
+                border: none;
+                background-color: var(--darkbackground);
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                font-size: 14px;
+                color: var(--white);
+                margin-bottom: 34px;
+            }
+
+            .signup-button:hover{
+                color: var(--green);
+            }
+
+        </style>
+    </head>
+    <body>
+        <div class="main">
+            <div class="top">
+                <img src="./res/images/EQL white.png" class="eqlimg" id="eqlimg" alt="EQL Banner Image">
+                <span class="close" id="close">x</span>
+            </div>
+            <div class="middle">
+                <form class="login" id="loginForm">
+                    <p class="forgot-title" style="margin: unset; margin-bottom:10px;">Please log in.</p>
+                    <div class="inputholder" style="margin-bottom: 17px;">
+                        <p class="inputtext">Email</p>
+                        <input class="input" title="email" type="email" name="email">
+                    </div>
+
+                    <div class="inputholder" style="margin-bottom: 9px;" id="pwDiv">
+                        <p class="inputtext" id="pwText">Password</p>
+                        <div class="password-holder">
+                            <input class="input" title="password" type="password" name="password">
+                            <img src="./res/images/eye-1.png" class="eye" id="eye" alt="See password">
+                        </div>
+                    </div>
+
+
+                    <div class="underfields" id="status">
+                        <a class="forgot" id="forgot"><u>Forgot Password?</u></a>
+                        <p class="incorrect">Email and/or password incorrect</p>
+                    </div>
+
+                    <div class="login-button-holder">
+                        <button class="login-button" type="submit" form="loginForm">Log in with Email</button>
+                        <button class="signup-button" id="signup">Sign Up</button>
+                    </div>
+                </form>
+
+                <form class="login" id="forgotForm" style="margin: unset;">
+                    <p class="forgot-title">Reset your password.</p>
+                    <div class="inputholder" style="margin-bottom: 9px;" id="resetEmail">
+                        <p class="inputtext">Email</p>
+                        <div class="password-holder">
+                            <input class="input" title="email" type="email" name="email">
+                            <p class="check" id="check">✅</p>
+                        </div>
+                    </div>
+                    <div class="underfields" id="status2" style="justify-content: center; margin: 0;">
+                        <p class="incorrect" id="resetErrorText" style="font-size: 14px;"></p>
+                    </div>
+                    <div class="login-button-holder" id="forgot-button-div" style="margin-top: 40px;">
+                        <button class="login-button" type="submit" form="forgotForm" id="forgot-button">Send reset password link</button>
+                        <button class="login-button" type="button" id="forgot-back" style="width: 102px;">Back</button>
+                    </div>
+                </form>
+                
+                <div id="post-login">
+                    <img class="post-login-img" src="./res/images/eql clearback.png" style="margin-top: 30px;">
+                    <p class="post-login-text" style="margin-top: 16px; margin-bottom: 17px;">You're logged in!</p>
+                    <p class="post-login-text" style="margin-bottom: 68px;">Welcome back to savings!</p>
+                    <div class="login-button-holder">
+                        <button class="login-button" type="button" id="post-login-done">Done</button>
+                    </div>
+                </div>
+
+                <div id="eql-offer-display">
+                    <div id="eql-no-offers">
+                        Awaiting offers...
+                    </div>
+                    <div class="login-button-holder">
+                        <button class="login-button" type="button" id="eqlbutton" style="margin-top: 17px;">Get up to $300 interest-free!</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="popup.js"></script>
+    </body> 
+</html>
