@@ -3,8 +3,8 @@
     "name": "EQL Browser Extension",
     "version": "1.0",
    
-    "permissions": ["tabs", "activeTab", "scripting", "history", "storage"],
-    "host_permissions": ["<all_urls>"],
+    "permissions": ["tabs", "activeTab", "scripting", "history", "storage", "cookies"],
+    "host_permissions": ["<all_urls>", "http://localhost:1337/"],
     
     "description": "A browser extension connecting you to EQL",
 
@@ -14,10 +14,10 @@
     },
 
     "icons": {
-        "16": "./res/images/eql-app-img.png",
-        "32": "./res/images/eql-app-img.png",
-        "48": "./res/images/eql-app-img.png",
-        "128": "./res/images/eql-app-img.png"
+        "16": "./res/images/eql clearback.png",
+        "32": "./res/images/eql clearback.png",
+        "48": "./res/images/eql clearback.png",
+        "128": "./res/images/eql clearback.png"
     },
     
     "background": {
