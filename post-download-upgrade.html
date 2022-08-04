@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>EQL User Tutorial</title>
+
+        <style>
+            :root {
+                --white: #FFFFFF;
+                --black: #000000;
+                --green: #0B9A70;
+                --darkgray: #3D3E3F;
+                --lightgray: #D9D9D9;
+
+                --incorrect: #c51717;
+
+                --darkbackground: #1B1B1B;
+                --loginbuttoncolor: #36383F;
+                --loginbuttonhightlight: #868686;
+                --forgotcolor: #BDBDBE;
+            }
+
+            body {
+                overscroll-behavior-y: none;
+            }
+            
+            body{
+                background-image: url('res/images/Background.svg');
+                background-repeat: no-repeat;
+                background-attachment: fixed;
+                background-size: cover;
+            }
+
+            #main{
+                display: flex;
+                flex-direction: row;
+            }
+
+            #login-form{
+                width: 50%;
+                display: flex;
+                flex-direction: column;
+            }
+
+            #forgot-form-div{
+                flex-direction: column;
+                width: 50%;
+            }
+
+            #login-logo{
+                width: 174px;
+                height: 36px;
+                margin-left: 81px;
+                margin-top: 32px;
+            }
+
+            #thank-you-div{
+                margin-top: 59px;
+                margin-left: 125px;
+                width: 261px;
+            }
+
+            #thank-you{
+                margin: 0;
+                color: #FFFFFF;
+                font-family: 'Gilroy-SemiBold', Helvetica, sans-serif !important;
+                font-size: 52px;
+            }
+
+            #thank-you2{
+                margin: 0;
+                margin-top: 15px;
+                font-size: 20px;
+                color: #858585;
+                font-family: 'Gilroy-SemiBold', Helvetica, sans-serif !important;
+            }
+
+            #thank-you3{
+                margin: 0;
+                font-size: 11px;
+                color: #858585;
+                font-family: 'Gilroy-SemiBold', Helvetica, sans-serif !important;
+            }
+
+            #login-form-actual{
+                display: inherit;
+                flex-direction: inherit;
+                margin-left: 125px;
+                margin-top: 43px;
+            }
+
+            .inputholder{
+                border: 1px solid#BDBDBE;
+                border-radius: 4px;
+                width: 304px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .inputtext{
+                display: flex;
+                color: var(--darkgray);
+                margin: 0;
+                margin-left: 8px;
+                margin-top: 9px;
+                font-size: 10px;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                align-self: baseline;
+            }
+
+            .input{
+                text-align: start;
+                font-size: 16px;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                background-color: transparent !important;
+                color: var(--white);
+                border: none;
+                outline: 0;
+                width: 94%;
+                margin-left: 5px;
+                margin-bottom: 2px;
+            }
+
+            .password-holder{
+                width: 98%; 
+                display: flex; 
+                flex-direction: row; 
+                height: 24px;
+            }
+
+            .eye{
+                height: 22px;
+                filter: invert(75%);
+            }
+
+            .eye:hover{
+                height: 24px;
+                filter: invert(100%);
+            }
+
+            .underfields{
+                display: flex;
+                flex-direction: row;
+                margin-bottom: 25px;
+                width: 98%;
+            }
+
+            .forgot{
+                color: var(--forgotcolor);
+                font-size: 12px;
+                cursor: pointer;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+            }
+
+            .forgot:hover{
+                color: var(--white);
+                font-size: 13px;
+                cursor: pointer;
+            }
+
+            .incorrect{
+                color: var(--incorrect);
+                font-size: 12px;
+                margin: 0;
+                display: none;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                margin-top: 5px;
+                margin-left: 36px;
+            }
+
+            .login-button-holder{
+                display: flex;
+                flex-direction: column;
+            }
+
+            .login-button{
+                border: none;
+                width: 304px;
+                height: 30px;
+                border-radius: 57px;
+                background-color: var(--loginbuttoncolor);
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                font-size: 14px;
+                color: var(--white);
+                margin-bottom: 17px;
+            }
+
+            .login-button:hover{
+                background-color: var(--loginbuttonhightlight);
+            }
+
+            .signup-button{
+                border: none;
+                background-color: transparent !important;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                font-size: 14px;
+                color: var(--white);
+                margin-bottom: 4px;
+                width: 304px;
+            }
+
+            .signup-button:hover{
+                color: var(--green);
+            }
+
+            #forgotForm{
+                margin-left: 125px;
+                margin-top: 43px;
+                display: flex;
+                flex-direction: column;
+            }
+
+            
+            .forgot{
+                color: var(--forgotcolor);
+                font-size: 12px;
+                cursor: pointer;
+            }
+
+            .forgot:hover{
+                color: var(--white);
+                font-size: 13px;
+                cursor: pointer;
+            }
+
+            .forgot-title{
+                color: var(--white);
+                font-size: 16px;
+                margin: 0;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+                margin-top: 28px;
+                margin-bottom: 26px;
+            }
+
+            .check{
+                width: 40px;
+                font-size: 20px;
+                margin: 0;
+                visibility: hidden;
+            }
+
+            .incorrect{
+                color: var(--incorrect);
+                font-size: 12px;
+                margin: 0;
+                display: none;
+                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
+            }
+
+            #community-info{
+                width: 50%;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+
+            #com-title{
+                margin: 0;
+                font-size: 20px;
+                color: #FFFFFF;
+                font-family: 'Gilroy-SemiBold', Helvetica, sans-serif !important;
+                margin-top: 130px;
+            }
+
+            .com-button{
+                display: flex;
+                margin-top: 15px;
+                font-size: 20px;
+                color: #000000;
+                background-color: #FFFFFF;
+                font-family: 'Gilroy-SemiBold', Helvetica, sans-serif !important;
+                font-size: 16px;
+                width: 400px;
+                height: 70px;
+                border-radius: 5px;
+                justify-content: center;
+                align-items: center;
+            }
+
+            #post-login{
+                display: none;
+                flex-direction: column;
+                width: 100%;
+                align-items: center;
+            }
+
+            #instructions-panel{
+                display: flex; 
+                width: calc(100% - 200px); 
+                height: 500px;
+                margin-top: 60px;
+                /* border: 1px solid red; */
+                flex-direction: row;
+            }
+
+            .inst-half{
+                display: flex;
+                flex-direction: column;
+                height: inherit;
+                width: 50%;
+            }
+
+            #inst-title{
+                margin: 0;
+                font-family: 'Gilroy-SemiBold', Helvetica, sans-serif !important;
+                font-size: 30px; 
+                margin-left: 25px;
+                color: #FFFFFF;
+            }
+            #inst-sub{
+                margin: 0;
+                font-family: 'Gilroy-SemiBold', Helvetica, sans-serif !important;
+                font-size: 15px; 
+                margin-left: 25px;
+                color: #BDBDBD;
+            }
+
+            #instruction-div-holder{
+                display: flex;
+                flex-direction: row;
+                margin-left: 25px;
+                margin-top: 44px;
+                /* border: 1px solid yellow; */
+                height: 400px;
+            }
+
+            #scrollbar{
+                width: 5%;
+                display: flex;
+                flex-direction: column;
+                height: inherit;
+            }
+
+            #scrollbar-item{
+                background-color: #BDBDBD;
+                width: 4px;
+                border-radius:10px;
+                height: inherit;
+            }
+
+            #instruction-div{
+                width: 75%;
+                height: 45px;
+                margin-top: 15px;
+                /* border: 1px solid green; */
+                display: flex;
+                flex-direction: column;
+                word-wrap: break-word;
+                overflow: auto;
+                -ms-overflow-style: none; 
+                scrollbar-width: none;
+                overscroll-behavior-y: none;
+            }
+
+            #instruction-div::-webkit-scrollbar{
+                display: none;
+            }
+
+            .instruction{
+                margin: 0;
+                font-family: 'Gilroy-SemiBold', Helvetica, sans-serif !important;
+                font-size: 16px;
+                color: #FFFFFF;
+                padding: 10px;
+                /* border: 1px solid blue; */
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="main">
+            <div id="login-form">
+                <img src="res/images/post-download-logo.png" id="login-logo">
+                <div id="thank-you-div">
+                    <p id="thank-you">Thank you!</p>
+                    <p id="thank-you2">Before we get to the extension...</p>
+                    <p id="thank-you3">(The extension can&#39;t work without a valid account)</p>
+                </div>
+
+                <form class="login" id="login-form-actual">
+                    <div class="inputholder" style="margin-bottom: 17px;">
+                        <p class="inputtext">Email</p>
+                        <input class="input" title="email" type="email" name="email">
+                    </div>
+
+                    <div class="inputholder" style="margin-bottom: 9px;" id="pwDiv">
+                        <p class="inputtext" id="pwText">Password</p>
+                        <div class="password-holder">
+                            <input class="input" title="password" type="password" name="password">
+                            <img src="./res/images/eye-1.png" class="eye" id="eye" alt="See password">
+                        </div>
+                    </div>
+
+
+                    <div class="underfields" id="status">
+                        <a  id="forgot"><u class="forgot">Forgot Password?</u></a>
+                        <p class="incorrect">Email and/or password incorrect</p>
+                    </div>
+
+                    <div class="login-button-holder">
+                        <button class="login-button" type="submit" form="login-form-actual">Log in with Email</button>
+                        <button class="signup-button" id="signup" type="button">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="forgot-form-div">
+                <img src="res/images/post-download-logo.png" id="login-logo">
+                <form class="login" id="forgotForm">
+                    <p class="forgot-title">Reset your password.</p>
+                    <div class="inputholder" style="margin-bottom: 9px;" id="resetEmail">
+                        <p class="inputtext">Email</p>
+                        <div class="password-holder">
+                            <input class="input" title="email" type="email" name="email">
+                            <p class="check" id="check">✅</p>
+                        </div>
+                    </div>
+                    <div class="underfields" id="status2" style="justify-content: center; margin: 0;">
+                        <p class="incorrect" id="resetErrorText" style="font-size: 14px;"></p>
+                    </div>
+
+                    <div class="login-button-holder" style="margin-top: 20px;">
+                        <button class="login-button" type="submit" form="forgotForm" id="forgot-button">Send reset password link</button>
+                        <button class="signup-button" type="button" id="forgot-back">Back</button>
+                    </div>
+                    
+                </form>
+            </div>
+
+            <div id="community-info">
+                <p id="com-title">Join the growing community that<br>Signed Up for EQL!</p>
+
+                <div class="com-button" style="margin-top: 40px;">Save $ at your essential stores</div>
+                <div class="com-button" style="background-color: #5DBDA1; color: #FFFFFF">Claim your additional $10 borrowing limit</div>
+                <div class="com-button">More to come as we grow!</div>
+            </div>
+
+            <div id="post-login">
+                <img src="res/images/post-download-logo.png" id="login-logo" style="align-self: baseline;">
+                <div id="instructions-panel">
+                    <div class="inst-half" id="inst-1">
+                        <p id="inst-title">How it works!</p>
+                        <p id="inst-sub">(scroll here for more!)</p>
+                        <div id="instruction-div-holder">
+                            <div id="scrollbar">
+                                <div id="scrollbar-item"></div>
+                            </div>
+                            <div id="instruction-div">
+                                <p class="instruction" id="i1">1. Shop online at your favorite retailers.<br>While you shop, we will check for exclusive discounts and money saving offers.</p>
+                                <p class="instruction" id="i2" style="margin-top: 80px; visibility: hidden;">2. Fill your cart and click the EQL saver extension to view offers. We&#39;ll search to see if discounts and coupons are available at this store.</p>
+                                <p class="instruction" id="i3" style="margin-top: 80px; visibility: hidden;">3. Simply click “Apply Coupon” and watch the magic happen! If we find offers, we will apply the savings directly towards your total.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="inst-half" id="inst-2" style="align-items: end; justify-content: center;">
+                        <img id="inst-pic" style="width: 450px;" src="res/images/inst1-pic.png">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="post-download-upgrade.js"></script>
+    </body>
+
+</html>

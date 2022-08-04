@@ -144,6 +144,7 @@ const createOfferElement = (offer, idx) => {
     offerid.id = "id"
     offerid.innerHTML = idx
     offerid.style.display = "none"
+    console.log(offerid)
     offerElement.appendChild(offerid)
     
     offerElement.setAttribute('title', 'Click to copy offer code')
