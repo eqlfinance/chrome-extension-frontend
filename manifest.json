@@ -4,7 +4,7 @@
     "version": "1.0",
    
     "permissions": ["tabs", "activeTab", "scripting", "history", "storage", "cookies"],
-    "host_permissions": ["<all_urls>", "http://localhost:1337/"],
+    "host_permissions": ["<all_urls>", "https://eql-extension-backend.herokuapp.com/"],
     
     "description": "A browser extension connecting you to EQL",
 
