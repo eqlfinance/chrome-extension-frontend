@@ -32,7 +32,6 @@ const initExtension = async () => {
 chrome.runtime.onInstalled.addListener((details) => {
     initExtension().then((result) => {
         if(result){
-            console.log("Extension initialized")
             chrome.tabs.onUpdated.addListener(onStoreListener)
     
             chrome.tabs.create({
@@ -74,7 +73,6 @@ const loginToEQL = async (userDetails) => {
         return chrome.cookies.get({url: backendBaseURL, name:"eql_user_member_key"})
     })
     .then((cookie) => {
-        console.log(cookie, " user member key shouldn't be here")
         if(cookie && cookie.value){
             return true
         }else{
@@ -120,8 +118,7 @@ const loginToEQL = async (userDetails) => {
                             }
                         })
                 }else{
-                    console.log("ERR:", json)
-                    return false
+                    throw json
                 }
             })
             .catch((error) => {
@@ -229,7 +226,7 @@ const loadFonts = () => {
     fonts.forEach((font) => {
         font.load().then((f) => {
             document.fonts.add(f);
-        }).catch((err) => console.log(err));
+        }).catch((err) => {});
     })
 }
 
@@ -381,6 +378,7 @@ const logout = () => {
 }
 
 const navigationsOnDomain = {dom: "", navs: 0}
+var modalMesageChange = false
 const onStoreListener = (tabId, changeInfo, newTab) => { 
     const finish = async () => {
         return readFromChromeStorage('offer').then((selectedOfferData) => {
@@ -416,45 +414,43 @@ const onStoreListener = (tabId, changeInfo, newTab) => {
     //TODO: Maybe a more custom approach instead chopping the whole website off
     getStoreName().then(async (domain) => {
         if(!newTab.active || newTab.url.startsWith("chrome")){
-            throw "Reject 1 " + !newTab.active + " " + newTab.url.startsWith("chrome")
+            throw "Reject -> Active:" + !newTab.active + " Chrome Tab:" + newTab.url.startsWith("chrome")
         }
 
         if(!newTab.url.includes(domain)){
             throw "This tab is not the store one"
         }
         
-        if(changeInfo.status == "complete"){
-            if(navigationsOnDomain.dom == domain){
-                    navigationsOnDomain.navs++
-            }else{
-                navigationsOnDomain.dom = domain
-                navigationsOnDomain.navs = 0
-    
-                chrome.storage.sync.set({offer:null, storeName:null})
-            }
+        if(navigationsOnDomain.dom == domain){
+                navigationsOnDomain.navs++
+        }else{
+            navigationsOnDomain.dom = domain
+            navigationsOnDomain.navs = 0
 
+            chrome.storage.sync.set({offer:null, storeName:null})
+        }
+
+        if(changeInfo.status == "complete"){
             await fetch(backendBaseURL + "api/domains")
             .then((res) => {return res.json()})
             .then(async (domains) => {
                 if(domains.join(' ').includes(domain)){
                     finish().then((result) => {
-                        console.log("Result of finish", result)
                         if(!result[0]){
-
                             readFromChromeStorage('offer').then((selectedOfferData) => {
                                 readFromChromeStorage('storeName').then((selectedOfferStoreName) => { 
                                     if(!selectedOfferData || !selectedOfferStoreName){
-                                        console.log("Setting message to null")
                                         statusForModal['message'] = null
                                         statusForModal['color'] = "#0B9A70"
                                     }
                                 })
                             })
                         }else{
-                            if(result[1] == null){
-                                console.log("Setting message to null 2")
+                            if(result[1] != null){
                                 statusForModal['message'] = null
                                 statusForModal['color'] = "#0B9A70"
+                            }else{
+                                modalMesageChange = true
                             }
                         }
                         popModal(newTab.id)
@@ -466,7 +462,6 @@ const onStoreListener = (tabId, changeInfo, newTab) => {
     })
     .catch((err) => {
         statusForModal['message'] = null
-        console.log("Being fussy because", err)
     })
 }
 
@@ -502,7 +497,6 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
             return true;
         })
         .catch((err) => {
-            console.log(err, " on offers")
             sendResponse([])
             return true;
         })
@@ -542,8 +536,9 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
             sendResponse(name)
         })
     }else if(req.selectedOffer){
-        getStoreName().then((name) => {
-            chrome.storage.sync.set({offer:req.selectedOffer, storeName:name})
+        getStoreName().then(async (name) => {
+            await chrome.storage.sync.set({offer:req.selectedOffer})
+            await chrome.storage.sync.set({storeName:name})
         }).then(() => {
             return chrome.tabs.query({active: true}).then((tabs) => {return tabs[0]})
             .then((tab) => {
@@ -552,20 +547,29 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
                     func: offerCodeEntry,
                     args: [req.selectedOffer.code]
                 }).then((injectionResults) => {
-                    return injectionResults[0].result
+                    return [injectionResults[0].result, tab.id]
                 })
             })
         })
-        .then((codeEntryFailed) => {
-            if(codeEntryFailed){
+        .then((result) => {
+            if(result[0]){
+                statusForModal['color'] = "#1B1B1B"
+                statusForModal['message'] = `We had trouble applying your offer.<br><br>Please enter code ${req.selectedOffer.code} at checkout!`
+                popModal(result[1])
                 sendResponse({title: "Code: | copied to your clipboard!", sub:"Continue shopping while we look for the code entry."})
             }else{
                 userRedeemOffer(req.selectedOffer, true)
                 .then((res) => {
                     if(res){
+                        statusForModal['color'] = "#0B9A70"
+                        statusForModal['message'] = `Applied offer ${req.selectedOffer.code}.<br><br>Thank you for using EQL!` 
+                        popModal(result[1])
                         sendResponse({title: "Offer applied successfully!", sub:"Code: | copied to your clipboard just in case."})
                     }
                     else{
+                        statusForModal['color'] = "#1B1B1B"
+                        statusForModal['message'] = `We had trouble applying your offer.<br><br>Please enter code ${req.selectedOffer.code} at checkout!`
+                        popModal(result[1])
                         sendResponse({title: "Code: | copied to your clipboard!", sub:"Please paste code in the coupon code entry."})
                     }
                 })

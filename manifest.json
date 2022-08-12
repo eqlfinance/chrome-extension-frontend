@@ -34,7 +34,7 @@
             "res/images/eql-app-img.png", 
             "post-download.html", 
             "res/firebase-compat.js",
-            "/res/images/eql-clearback.png"
+            "/res/images/EQLLOGOBIGGER.svg"
         ],
           "matches": ["<all_urls>"]
         }

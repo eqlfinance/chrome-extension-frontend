@@ -15,7 +15,7 @@ try {
     const openModal = document.getElementsByClassName("open-modal")[0];
     const openModalPic = document.getElementById("open-modal-pic");
 
-    openModalPic.setAttribute('src', chrome.runtime.getURL('./res/images/eql-clearback.png'))
+    openModalPic.setAttribute('src', chrome.runtime.getURL('./res/images/EQLLOGOBIGGER.svg'))
     var blinking = false
 
     const modalSwitchState = (which) => {
@@ -74,7 +74,6 @@ try {
     }
 
     chrome.runtime.sendMessage('status for modal', (response) => {
-        console.log("Status for modal:", response)
         if(response.message){
             openModal.style.backgroundColor = response.color
             document.getElementById("open-modal-text").innerHTML = response.message

@@ -125,13 +125,13 @@ window.onload = () => {
         if(prevHeight > (divMaxHeight/3) + 100 && !heightReached[0]){
             document.getElementById('i2').style.visibility = "visible"
             document.getElementById('i1').style.color = "#787878"
-            document.getElementById('inst-pic').src = "./res/images/State_AboutToClickCode2.png"
+            document.getElementById('inst-pic').src = "./res/images/2.png"
             heightReached[0] = true
         }
         if(prevHeight > (divMaxHeight*2/3) + 100 && !heightReached[1]){
             document.getElementById('i3').style.visibility = "visible"
             document.getElementById('i2').style.color = "#787878"
-            document.getElementById('inst-pic').src = "./res/images/State_Clicked.png"
+            document.getElementById('inst-pic').src = "./res/images/3.png"
             heightReached[1] = true
         }
 
@@ -146,9 +146,34 @@ window.onload = () => {
         instructionDiv.scroll({top: instructionDiv.clientHeight + 5})
     }
     document.getElementById('instruction-div-holder').onmouseenter = () => {
-
         instructionDiv.scroll({top: 100})
     }
+
+    if(instructionDiv.style.display != "none"){
+        var add = 0
+        let id = setInterval(() => {
+            if(instructionDiv.clientHeight >= divMaxHeight){
+                clearInterval(id)
+            }
+            instructionDiv.style.height = instructionDiv.clientHeight + add + "px"
+            
+            if(instructionDiv.clientHeight > (divMaxHeight/3) + 100 && document.getElementById('i2').style.visibility == "hidden"){
+                document.getElementById('i2').style.visibility = "visible"
+                document.getElementById('i1').style.color = "#787878"
+                document.getElementById('inst-pic').src = "./res/images/2.png"
+            }
+            if(instructionDiv.clientHeight > (divMaxHeight*2/3) + 100 && document.getElementById('i3').style.visibility == "hidden"){
+                document.getElementById('i3').style.visibility = "visible"
+                document.getElementById('i2').style.color = "#787878"
+                document.getElementById('inst-pic').src = "./res/images/3.png"
+            }
+    
+            let percentage = Math.floor((instructionDiv.clientHeight/divMaxHeight) * 100)
+            document.getElementById("scrollbar-item").style["backgroundImage"] = `linear-gradient(180deg, #2EA683 ${percentage}%, #BDBDBD ${100-percentage}%)`
+            add++
+        }, 500)
+    }
+
 }
 
 
