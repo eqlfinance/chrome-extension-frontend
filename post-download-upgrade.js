@@ -109,7 +109,7 @@ document.getElementById('signup').addEventListener('click', () => {
 
 window.onload = () => {
 
-    const divMaxHeight = 379
+    const divMaxHeight = 387
     const instructionDiv = document.getElementById("instruction-div")
     instructionDiv.focus()
     var prevHeight = instructionDiv.clientHeight
@@ -125,13 +125,13 @@ window.onload = () => {
         if(prevHeight > (divMaxHeight/3) + 100 && !heightReached[0]){
             document.getElementById('i2').style.visibility = "visible"
             document.getElementById('i1').style.color = "#787878"
-            document.getElementById('inst-pic').src = "./res/images/inst2-pic.png"
+            document.getElementById('inst-pic').src = "./res/images/State_AboutToClickCode2.png"
             heightReached[0] = true
         }
         if(prevHeight > (divMaxHeight*2/3) + 100 && !heightReached[1]){
             document.getElementById('i3').style.visibility = "visible"
             document.getElementById('i2').style.color = "#787878"
-            document.getElementById('inst-pic').src = "./res/images/inst3-pic.png"
+            document.getElementById('inst-pic').src = "./res/images/State_Clicked.png"
             heightReached[1] = true
         }
 
@@ -144,6 +144,10 @@ window.onload = () => {
     window.onscroll = (ev) => {
         instructionDiv.focus()
         instructionDiv.scroll({top: instructionDiv.clientHeight + 5})
+    }
+    document.getElementById('instruction-div-holder').onmouseenter = () => {
+
+        instructionDiv.scroll({top: 100})
     }
 }
 

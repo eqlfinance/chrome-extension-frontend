@@ -59,14 +59,14 @@
             #thank-you-div{
                 margin-top: 59px;
                 margin-left: 125px;
-                width: 261px;
+                width: 280px;
             }
 
             #thank-you{
                 margin: 0;
                 color: #FFFFFF;
                 font-family: 'Gilroy-SemiBold', Helvetica, sans-serif !important;
-                font-size: 52px;
+                font-size: 30px;
             }
 
             #thank-you2{
@@ -79,7 +79,8 @@
 
             #thank-you3{
                 margin: 0;
-                font-size: 11px;
+                margin-top: 5px;
+                font-size: 12px;
                 color: #858585;
                 font-family: 'Gilroy-SemiBold', Helvetica, sans-serif !important;
             }
@@ -123,6 +124,19 @@
                 margin-bottom: 2px;
             }
 
+            @-webkit-keyframes autofill {
+                0%,100% {
+                    color: #666;
+                    background: transparent;
+                }
+            }
+
+            input:-webkit-autofill {
+                -webkit-animation-delay: 1s; /* Safari support - any positive time runs instantly */
+                -webkit-animation-name: autofill;
+                -webkit-animation-fill-mode: both;
+            }
+
             .password-holder{
                 width: 98%; 
                 display: flex; 
@@ -158,16 +172,6 @@
                 color: var(--white);
                 font-size: 13px;
                 cursor: pointer;
-            }
-
-            .incorrect{
-                color: var(--incorrect);
-                font-size: 12px;
-                margin: 0;
-                display: none;
-                font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
-                margin-top: 5px;
-                margin-left: 36px;
             }
 
             .login-button-holder{
@@ -246,6 +250,7 @@
                 font-size: 12px;
                 margin: 0;
                 display: none;
+                margin-left: 30px;
                 font-family: 'Gilroy-Medium', Helvetica, sans-serif !important;
             }
 
@@ -267,7 +272,7 @@
 
             .com-button{
                 display: flex;
-                margin-top: 15px;
+                margin-top: 25px;
                 font-size: 20px;
                 color: #000000;
                 background-color: #FFFFFF;
@@ -278,6 +283,7 @@
                 border-radius: 5px;
                 justify-content: center;
                 align-items: center;
+                cursor:not-allowed ;
             }
 
             #post-login{
@@ -292,7 +298,6 @@
                 width: calc(100% - 200px); 
                 height: 500px;
                 margin-top: 60px;
-                /* border: 1px solid red; */
                 flex-direction: row;
             }
 
@@ -323,7 +328,6 @@
                 flex-direction: row;
                 margin-left: 25px;
                 margin-top: 44px;
-                /* border: 1px solid yellow; */
                 height: 400px;
             }
 
@@ -344,15 +348,13 @@
             #instruction-div{
                 width: 75%;
                 height: 45px;
-                margin-top: 15px;
-                /* border: 1px solid green; */
                 display: flex;
                 flex-direction: column;
                 word-wrap: break-word;
                 overflow: auto;
                 -ms-overflow-style: none; 
                 scrollbar-width: none;
-                overscroll-behavior-y: none;
+                overscroll-behavior: none;
             }
 
             #instruction-div::-webkit-scrollbar{
@@ -363,9 +365,8 @@
                 margin: 0;
                 font-family: 'Gilroy-SemiBold', Helvetica, sans-serif !important;
                 font-size: 16px;
-                color: #FFFFFF;
+                color: #787878;
                 padding: 10px;
-                /* border: 1px solid blue; */
             }
         </style>
     </head>
@@ -375,9 +376,9 @@
             <div id="login-form">
                 <img src="res/images/post-download-logo.png" id="login-logo">
                 <div id="thank-you-div">
-                    <p id="thank-you">Thank you!</p>
-                    <p id="thank-you2">Before we get to the extension...</p>
-                    <p id="thank-you3">(The extension can&#39;t work without a valid account)</p>
+                    <p id="thank-you">Thank you<br>for downloading the extension!</p>
+                    <p id="thank-you2">Before the <span style="color: #c8c6c6;">savings</span> begin...</p>
+                    <p id="thank-you3">(The extension can&#39;t work without a valid EQL account)</p>
                 </div>
 
                 <form class="login" id="login-form-actual">
@@ -449,14 +450,14 @@
                                 <div id="scrollbar-item"></div>
                             </div>
                             <div id="instruction-div">
-                                <p class="instruction" id="i1">1. Shop online at your favorite retailers.<br>While you shop, we will check for exclusive discounts and money saving offers.</p>
-                                <p class="instruction" id="i2" style="margin-top: 80px; visibility: hidden;">2. Fill your cart and click the EQL saver extension to view offers. We&#39;ll search to see if discounts and coupons are available at this store.</p>
-                                <p class="instruction" id="i3" style="margin-top: 80px; visibility: hidden;">3. Simply click “Apply Coupon” and watch the magic happen! If we find offers, we will apply the savings directly towards your total.</p>
+                                <p class="instruction" id="i1"><span style="font-size: 18px; color: #FFFFFF;">Shop online at your favorite retailers.</span><br>While you shop, we will check for exclusive discounts and money saving offers.</p>
+                                <p class="instruction" id="i2" style="margin-top: 53px; visibility: hidden;"><span style="font-size: 18px; color: #FFFFFF;">Fill your cart and click the EQL saver extension to view offers.</span><br>We&#39;ll search to see if discounts and coupons are available at this store.</p>
+                                <p class="instruction" id="i3" style="margin-top: 50px; visibility: hidden;"><span style="font-size: 18px; color: #FFFFFF;">Simply click “Apply Coupon” and watch the magic happen!</span><br>If we find the promo code entry, we will apply the savings directly towards your total.</p>
                             </div>
                         </div>
                     </div>
                     <div class="inst-half" id="inst-2" style="align-items: end; justify-content: center;">
-                        <img id="inst-pic" style="width: 450px;" src="res/images/inst1-pic.png">
+                        <img id="inst-pic" style="width: 450px; height: 300px; border-radius: 20px;" src="res/images/State_OnPage.png">
                     </div>
                 </div>
             </div>

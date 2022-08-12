@@ -81,12 +81,19 @@ fonts.forEach((font) => {
     }).catch((err) => console.log(err));
 })
 
+var elementactivated = null
 const offerElementClick = (ev) => {
     var element = ev.target
 
     if(element.tagName != 'DIV'){
         element = element.parentElement
     }
+
+    if(elementactivated == element){
+        return 
+    }
+
+    elementactivated = element
 
     const title = element.querySelector('#title')
     const code = element.querySelector('#code')
@@ -100,6 +107,11 @@ const offerElementClick = (ev) => {
         code.innerHTML = response.sub.replaceAll("|", values[1])
         element.style.backgroundColor = "#0B9A70"
         
+        let children = offerDiv.querySelectorAll(".eql-offer")
+        for (let index = 0; index < children.length; index++) {
+            const element = children[index];
+            element.style.pointerEvents = "none"
+        }
 
         let copy = [new ClipboardItem({ "text/plain": new Blob([values[1]], { type: "text/plain" }) })]
         navigator.clipboard.write(copy).then(() => {
@@ -108,14 +120,20 @@ const offerElementClick = (ev) => {
             console.log("Copy error")
         })
         setTimeout(() => {
+            offerDiv.removeAttribute('disabled')
             title.innerHTML = values[0]
             code.innerHTML = values[1]
             element.style.backgroundColor = "#1B1B1B"
 
+            for (let index = 0; index < children.length; index++) {
+                const element = children[index];
+                element.style.pointerEvents = "auto"
+            }
+
             setTimeout(() => {
                 window.close()
             }, 2000)
-        }, 10000)
+        }, 7000)
     })
 
 }
@@ -144,10 +162,9 @@ const createOfferElement = (offer, idx) => {
     offerid.id = "id"
     offerid.innerHTML = idx
     offerid.style.display = "none"
-    console.log(offerid)
     offerElement.appendChild(offerid)
     
-    offerElement.setAttribute('title', 'Click to copy offer code')
+    offerElement.setAttribute('title', 'Click to copy or apply offer code')
 
     offerElement.onclick = offerElementClick
     offerElement.onmouseover = () => {

@@ -14,10 +14,10 @@
     },
 
     "icons": {
-        "16": "./res/images/eql clearback.png",
-        "32": "./res/images/eql clearback.png",
-        "48": "./res/images/eql clearback.png",
-        "128": "./res/images/eql clearback.png"
+        "16": "./res/images/eql-clearback.png",
+        "32": "./res/images/eql-clearback.png",
+        "48": "./res/images/eql-clearback.png",
+        "128": "./res/images/eql-clearback.png"
     },
     
     "background": {
@@ -26,7 +26,16 @@
 
     "web_accessible_resources": [
         {
-          "resources": ["modal.html", "res/font/Gilroy-Bold.ttf", "res/font/Gilroy-Medium.ttf", "res/font/Gilroy-SemiBold.ttf", "res/images/eql-app-img.png", "post-download.html", "res/firebase-compat.js"],
+          "resources": [
+            "modal.html", 
+            "res/font/Gilroy-Bold.ttf", 
+            "res/font/Gilroy-Medium.ttf", 
+            "res/font/Gilroy-SemiBold.ttf", 
+            "res/images/eql-app-img.png", 
+            "post-download.html", 
+            "res/firebase-compat.js",
+            "/res/images/eql-clearback.png"
+        ],
           "matches": ["<all_urls>"]
         }
     ]

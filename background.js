@@ -1,4 +1,4 @@
-var statusForModal = null
+var statusForModal = {color: null, message: null}
 var taken_coupon_code = false
 const backendBaseURL =  "https://eql-extension-backend.herokuapp.com/" 
 
@@ -58,96 +58,139 @@ function readFromChromeStorage(key) {
 }
 
 const loginToEQL = async (userDetails) => {
-    return chrome.cookies.get({url: backendBaseURL, name:"eql_user_member_key"})
-        .then((cookie) => {
-            if(cookie && cookie.value){
-                return true
-            }else{
-                return firebase.auth().signInWithEmailAndPassword(userDetails.email, userDetails.password)
-                .then((userCredential) => {
-                    // Signed in
-                    var user = userCredential.user;
-                    return user
-                })
-                .then(async (user) => {
-                    if(user){
-                        return user.getIdToken(true).then((token) => {
-                            return token
-                        })
-                    }else{
-                        return null
-                    }
-                }).then((token) => {
-                    if(!token){
-                        return null
-                    }else{
-                        return chrome.cookies.set({httpOnly: true, secure: true, url: backendBaseURL, name:"eql_firebase_id", value: token})
-                        .then((cookie) =>{
-                            return fetch(backendBaseURL + "api/eql-login")
-                            .then((res) => {
-                                return res.json()
-                            }).catch((err) => {
-                                return null
-                            })
-                        })
-                    }
-                }).then(async (json) => {
-                    if(json && json.access_token){
-                        await chrome.cookies.remove({url: backendBaseURL, name:"eql_firebase_id"})
-                        let user_member_key = json.user_id.split('-').join('').toLowerCase()
+    return chrome.cookies.get({url: backendBaseURL, name:"eql_user_member_key"}).then((cookie) => {
+        if(!cookie){
+            return initExtension()
+        }
 
-                        return chrome.cookies.set({httpOnly: true, secure: true, url: backendBaseURL, name:"eql_user_member_key", value: user_member_key})
-                            .then((cookie) => {
-                                if(chrome.runtime.lastError){
-                                    return false
-                                }else{
-                                    return true
-                                }
-                            })
-                    }else{
-                        console.log("ERR:", json)
-                        return false
-                    }
-                })
-                .catch((error) => {
-                    var errorCode = error.code;
-                    var errorMessage = error.message;
-    
-                    console.log(error)
+        return cookie
+    }).then((cookie) => {
+        if(!cookie){
+            throw "Unreachable unless the server down"
+        }
+
+        return null
+    }).then(() => {
+        return chrome.cookies.get({url: backendBaseURL, name:"eql_user_member_key"})
+    })
+    .then((cookie) => {
+        console.log(cookie, " user member key shouldn't be here")
+        if(cookie && cookie.value){
+            return true
+        }else{
+            return firebase.auth().signInWithEmailAndPassword(userDetails.email, userDetails.password)
+            .then((userCredential) => {
+                // Signed in
+                var user = userCredential.user;
+                return user
+            })
+            .then(async (user) => {
+                if(user){
+                    return user.getIdToken(true).then((token) => {
+                        return token
+                    })
+                }else{
+                    return null
+                }
+            }).then((token) => {
+                if(!token){
+                    return null
+                }else{
+                    return chrome.cookies.set({httpOnly: true, secure: true, url: backendBaseURL, name:"eql_firebase_id", value: token})
+                    .then((cookie) =>{
+                        return fetch(backendBaseURL + "api/eql-login")
+                        .then((res) => {
+                            return res.json()
+                        }).catch((err) => {
+                            return null
+                        })
+                    })
+                }
+            }).then(async (json) => {
+                if(json && json.access_token){
+                    await chrome.cookies.remove({url: backendBaseURL, name:"eql_firebase_id"})
+                    let user_member_key = json.user_id.split('-').join('').toLowerCase()
+
+                    return chrome.cookies.set({httpOnly: true, secure: true, url: backendBaseURL, name:"eql_user_member_key", value: user_member_key})
+                        .then((cookie) => {
+                            if(chrome.runtime.lastError){
+                                return false
+                            }else{
+                                return true
+                            }
+                        })
+                }else{
+                    console.log("ERR:", json)
                     return false
-                });
-            }
-        })
+                }
+            })
+            .catch((error) => {
+                var errorCode = error.code;
+                var errorMessage = error.message;
+
+                console.log(error)
+                return false
+            });
+        }
+    })
 }
 
 const searchAPIRequest = async (url) => {
-    if(!url){
-        return []
-    }else{
-        return fetch(backendBaseURL + "api/domains?search=" + url)
-        .then((res) => {
-            if(res.status == 403 || res.status == 401){
-                initExtension().then((result) => {
-                    if(result){
-                        return searchAPIRequest(url)
-                    }else{
-                        console.log("Error on search api request reinit ")
-                        return []
-                    }
-                })
-            }
+    return chrome.cookies.get({url: backendBaseURL, name:"eql_strapi_jwt"}).then((cookie) => {
+        if(!cookie){
+            return initExtension()
+        }
 
-            return res.json()
-        }).catch((err) => {
-            console.log("Error on search api request ", err)
+        return cookie
+    }).then((cookie) => {
+        if(!cookie){
+            throw "Unreachable unless the server down searchAPIRequset"
+        }
+
+        return null
+    }).then(() => {
+        if(!url){
             return []
-        })
-    }
+        }else{
+            return fetch(backendBaseURL + "api/domains?search=" + url)
+            .then((res) => {
+                if(res.status == 403 || res.status == 401){
+                    console.log("Status code 403, rerunning")
+                    initExtension().then((result) => {
+                        if(result){
+                            return searchAPIRequest(url)
+                        }else{
+                            return []
+                        }
+                    })
+                }
+
+                return res.json()
+            }).catch((err) => {
+                console.log("Error on search api request ", err)
+                return []
+            })
+        }
+    })
 }
 
 const getOffersForUser = (url) => {
     return searchAPIRequest(url).then(async (offers) => {
-        return chrome.cookies.get({url: backendBaseURL, name:"eql_user_member_key"})
+        return chrome.cookies.get({url: backendBaseURL, name:"eql_strapi_jwt"}).then((cookie) => {
+            if(!cookie){
+                return initExtension()
+            }
+
+            return cookie
+        }).then((cookie) => {
+            if(!cookie){
+                throw "Unreachable unless the server down getOffersForUser"
+            }
+    
+            return null
+        }).then(() => {
+            return chrome.cookies.get({url: backendBaseURL, name:"eql_user_member_key"})
+        })
         .then(async (cookie) => {
             let userCaRedeem = []
 
@@ -170,7 +213,9 @@ const getOffersForUser = (url) => {
             }
             return userCaRedeem
         })
-
+        .catch((err) => {
+            return []
+        })
     })
 }
 
@@ -211,7 +256,7 @@ const offerCodeEntry = (code) => {
     var buttons = document.querySelectorAll("input[type=button], button");
     var selectedInput = null
     var selectedButton = null
-    const inputMatchString = /\b(discount|coupon|offer|promo)/
+    const inputMatchString = /(discount|coupon|offer|promo)/
 
     const findKeywordInElement = (element) => {
         if(element.innerHTML.toLowerCase().match(inputMatchString)){
@@ -236,7 +281,6 @@ const offerCodeEntry = (code) => {
         if(findKeywordInElement(element)){
             return true
         }else{
-            console.log(element, element.innerHTML)
             for (let index = 0; index < element.children.length; index++) {
                 const child = element.children[index];
                 if(findKeywordInElement(child)){
@@ -325,41 +369,25 @@ const userRedeemOffer = async (offer, reInitOnFail) => {
                 return false
             }
         })
+        .catch((err) => {
+            return false
+        })
     })
+}
+
+const logout = () => {
+    chrome.cookies.remove({url: backendBaseURL, name:"eql_user_member_key"})
+    chrome.cookies.remove({url: backendBaseURL, name:"eql_strapi_jwt"})
 }
 
 const navigationsOnDomain = {dom: "", navs: 0}
 const onStoreListener = (tabId, changeInfo, newTab) => { 
-    
-    //TODO: Maybe a more custom approach instead chopping the whole website off
-    getStoreName().then((domain) => {
-        if(!newTab.active || newTab.url.startsWith("chrome")){
-            throw "Reject 1 " + !newTab.active + " " + newTab.url.startsWith("chrome")
-        }
-
-        if(!newTab.url.includes(domain)){
-            throw "This tab is not the store one"
-        }
-
-        if(navigationsOnDomain.dom == domain){
-            if(changeInfo.status == "complete")
-                navigationsOnDomain.navs++
-        }else{
-            navigationsOnDomain.dom = domain
-            navigationsOnDomain.navs = 0
-
-            throw "Navigation domain didn't match previous"
-        }
-
-        if(navigationsOnDomain.navs < 1){
-            throw "Not enough navigations on this domain"
-        }
-    }).then(() => {
-        readFromChromeStorage('offer').then((selectedOfferData) => {
-            readFromChromeStorage('storeName').then((selectedOfferStoreName) => {
-                getStoreName().then((currentStoreName) => {
+    const finish = async () => {
+        return readFromChromeStorage('offer').then((selectedOfferData) => {
+            return readFromChromeStorage('storeName').then((selectedOfferStoreName) => {
+                return getStoreName().then((currentStoreName) => {
                     if((selectedOfferData.offer && selectedOfferData.offer.code) && (selectedOfferStoreName.storeName == currentStoreName) && changeInfo.status == "complete"){
-                        chrome.scripting.executeScript({
+                        return chrome.scripting.executeScript({
                             target: {tabId: newTab.id},
                             func: offerCodeEntry,
                             args: [selectedOfferData.offer.code]
@@ -368,21 +396,84 @@ const onStoreListener = (tabId, changeInfo, newTab) => {
                         }).then((codeEntryFailed) => {
                             if(codeEntryFailed){
                                 //TODO: If this didnt work then tell the user the code is copied and to insert manually
-                                //statusForModal = `We had trouble applying your offer. <br> Please enter code ${selectedOfferData.code} at checkout!` 
+                                statusForModal['color'] = "#1B1B1B"
+                                statusForModal['message'] = `We had trouble applying your offer.<br><br>Please enter code ${selectedOfferData.offer.code} at checkout!`
                             }else{
-                                userRedeemOffer(selectedOfferData, true)
+                                statusForModal['color'] = "#0B9A70"
+                                statusForModal['message'] = `Applied offer ${selectedOfferData.offer.code}. <br> Thank you for using EQL!` 
+                                userRedeemOffer(selectedOfferData.offer, true)
                             }
+                            return [true, codeEntryFailed]
                         })
                     }else{
-                        
+                        return false
                     }
-                    
                 })
             })
         })
+    }
+
+    //TODO: Maybe a more custom approach instead chopping the whole website off
+    getStoreName().then(async (domain) => {
+        if(!newTab.active || newTab.url.startsWith("chrome")){
+            throw "Reject 1 " + !newTab.active + " " + newTab.url.startsWith("chrome")
+        }
+
+        if(!newTab.url.includes(domain)){
+            throw "This tab is not the store one"
+        }
+        
+        if(changeInfo.status == "complete"){
+            if(navigationsOnDomain.dom == domain){
+                    navigationsOnDomain.navs++
+            }else{
+                navigationsOnDomain.dom = domain
+                navigationsOnDomain.navs = 0
+    
+                chrome.storage.sync.set({offer:null, storeName:null})
+            }
+
+            await fetch(backendBaseURL + "api/domains")
+            .then((res) => {return res.json()})
+            .then(async (domains) => {
+                if(domains.join(' ').includes(domain)){
+                    finish().then((result) => {
+                        console.log("Result of finish", result)
+                        if(!result[0]){
+
+                            readFromChromeStorage('offer').then((selectedOfferData) => {
+                                readFromChromeStorage('storeName').then((selectedOfferStoreName) => { 
+                                    if(!selectedOfferData || !selectedOfferStoreName){
+                                        console.log("Setting message to null")
+                                        statusForModal['message'] = null
+                                        statusForModal['color'] = "#0B9A70"
+                                    }
+                                })
+                            })
+                        }else{
+                            if(result[1] == null){
+                                console.log("Setting message to null 2")
+                                statusForModal['message'] = null
+                                statusForModal['color'] = "#0B9A70"
+                            }
+                        }
+                        popModal(newTab.id)
+                    })
+                }
+            }) 
+        }
+
     })
     .catch((err) => {
-        
+        statusForModal['message'] = null
+        console.log("Being fussy because", err)
+    })
+}
+
+const popModal = (tabId) => {
+    chrome.scripting.executeScript({
+        target: {tabId: tabId},
+        files: ['modal.js'],
     })
 }
 
@@ -411,6 +502,7 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
             return true;
         })
         .catch((err) => {
+            console.log(err, " on offers")
             sendResponse([])
             return true;
         })
@@ -423,6 +515,7 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
                 sendResponse(null)
             }
         }).catch((err) => {
+            console.log("Error on login", err)
             sendResponse(null)
         })
         
@@ -433,7 +526,7 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
             sendResponse(cookie != null)
         })
     }else if(req == "logout"){
-        chrome.cookies.remove({url: backendBaseURL, name:"eql_user_member_key"})
+        logout()
     }
     else if(req.resetEmail){
         firebase.auth().sendPasswordResetEmail(req.resetEmail)
@@ -465,7 +558,7 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
         })
         .then((codeEntryFailed) => {
             if(codeEntryFailed){
-                sendResponse({title: "Code: | copied to your clipboard!", sub:"You will have to paste code on checkout."})
+                sendResponse({title: "Code: | copied to your clipboard!", sub:"Continue shopping while we look for the code entry."})
             }else{
                 userRedeemOffer(req.selectedOffer, true)
                 .then((res) => {
@@ -473,7 +566,7 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
                         sendResponse({title: "Offer applied successfully!", sub:"Code: | copied to your clipboard just in case."})
                     }
                     else{
-                        sendResponse({title: "Code: | copied to your clipboard!", sub:"You will have to paste code on checkout."})
+                        sendResponse({title: "Code: | copied to your clipboard!", sub:"Please paste code in the coupon code entry."})
                     }
                 })
             }
@@ -482,6 +575,8 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
             sendResponse({title: "Error on code application.", sub:"Code: | copied to your clipboard."})
         });
 
+    }else if(req == "status for modal"){
+        sendResponse(statusForModal)
     }
     
     return true;
@@ -493,4 +588,3 @@ chrome.history.onVisited.addListener(
         
     }
 )
-
