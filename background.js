@@ -198,19 +198,22 @@ const getOffersForUser = (url) => {
                 }))
                 .then((res) => {return res.json()})
                 .then(async (redeemData) => {
+                    console.log("Redeem data", redeemData)
                     if((redeemData.message && redeemData.status == 200) ||
-                        (redeemData.offers && redeemData.offers[0].offer_uses_remaining.usable)){
+                    (redeemData.offers && redeemData.offers[0].offer_uses_remaining.usable)){
                         return true
                     }else{
                         return false
                     }
                 }).then((can) => {
+                    console.log("Can user redeem=", can)
                     if(can) userCaRedeem.push(offer)
                 })
             }
             return userCaRedeem
         })
         .catch((err) => {
+            console.log("Error on getOffersForUser", err)
             return []
         })
     })
@@ -492,11 +495,13 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
             return await getOffersForUser(url)
         })
         .then((data) => {
+            console.log("Getting offers: ", data)
             //CUSTOMER TOUCH POINT: They requested offers (inside data) at the domain in tab.url
             sendResponse(data)
             return true;
         })
         .catch((err) => {
+            console.log("Error on getting offers", err)
             sendResponse([])
             return true;
         })
