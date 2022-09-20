@@ -1,46 +1,11 @@
 var statusForModal = {color: null, message: null}
 var taken_coupon_code = false
-const backendBaseURL =  "https://eql-extension-backend.herokuapp.com/" 
-
-self.importScripts(chrome.runtime.getURL("res/firebase-compat.js"));
-
-const initExtension = async () => {
-    return fetch(backendBaseURL + 'api/init-extension')
-    .then((res) => {return res.json()})
-    .then((res) => {
-        
-        return chrome.cookies.set({httpOnly: true, secure: true, url: backendBaseURL, name:"eql_strapi_jwt", value: res.jwt})
-        .then((cookie) => {
-            if(!chrome.runtime.lastError){
-                const app = firebase.initializeApp(res.config);
-                var defaultAuth = firebase.auth();
-                return true
-            }else{
-                console.log(chrome.runtime.lastError)
-                return false
-            }
-        })
-
-    })
-    .catch((err) => {
-        console.log("Error on init extension", err)
-        return false
-    })
-}
+const backendBaseURL =  "https://eql-saver-extension.herokuapp.com/"
 
 
 chrome.runtime.onInstalled.addListener((details) => {
-    initExtension().then((result) => {
-        if(result){
-            chrome.tabs.onUpdated.addListener(onStoreListener)
-    
-            chrome.tabs.create({
-                url: chrome.runtime.getURL('post-download-upgrade.html')
-            })
-        }else{
-            //The server is down or something catastrophic
-        }
-        
+    chrome.tabs.create({
+        url: chrome.runtime.getURL('post-download-upgrade.html')
     })
 });
 
@@ -57,77 +22,47 @@ function readFromChromeStorage(key) {
 }
 
 const loginToEQL = async (userDetails) => {
-    return chrome.cookies.get({url: backendBaseURL, name:"eql_user_member_key"}).then((cookie) => {
-        if(!cookie){
-            return initExtension()
-        }
-
-        return cookie
-    }).then((cookie) => {
-        if(!cookie){
-            throw "Unreachable unless the server down"
-        }
-
-        return null
-    }).then(() => {
-        return chrome.cookies.get({url: backendBaseURL, name:"eql_user_member_key"})
-    })
+    return chrome.cookies.get({url: backendBaseURL, name:"eql_user_member_key"})
     .then((cookie) => {
         if(cookie && cookie.value){
+            console.log('User logged in already')
             return true
         }else{
-            return firebase.auth().signInWithEmailAndPassword(userDetails.email, userDetails.password)
-            .then((userCredential) => {
-                // Signed in
-                var user = userCredential.user;
-                return user
+            return fetch(backendBaseURL + "api/eql-login", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: userDetails.email,
+                    password: userDetails.password
+                })
             })
-            .then(async (user) => {
-                if(user){
-                    return user.getIdToken(true).then((token) => {
-                        return token
-                    })
-                }else{
-                    return null
-                }
-            }).then((token) => {
-                if(!token){
-                    return null
-                }else{
-                    return chrome.cookies.set({httpOnly: true, secure: true, url: backendBaseURL, name:"eql_firebase_id", value: token})
-                    .then((cookie) =>{
-                        return fetch(backendBaseURL + "api/eql-login")
-                        .then((res) => {
-                            return res.json()
-                        }).catch((err) => {
-                            return null
-                        })
-                    })
-                }
-            }).then(async (json) => {
-                if(json && json.access_token){
-                    await chrome.cookies.remove({url: backendBaseURL, name:"eql_firebase_id"})
-                    let user_member_key = json.user_id.split('-').join('').toLowerCase()
+            .then(async (res) => {
+                console.log(res)
+                let response = await res.json()
+                console.log("Login to EQL response", response)
 
-                    return chrome.cookies.set({httpOnly: true, secure: true, url: backendBaseURL, name:"eql_user_member_key", value: user_member_key})
-                        .then((cookie) => {
-                            if(chrome.runtime.lastError){
-                                return false
-                            }else{
-                                return true
-                            }
-                        })
+                if(!response.jwt){
+                    return false
                 }else{
-                    throw json
+                    await chrome.cookies.set({httpOnly: true, secure: true, url: backendBaseURL, name:"eql_user_member_key", value: response.mk})
+                    await chrome.cookies.set({httpOnly: true, secure: true, url: backendBaseURL, name:"eql_strapi_jwt", value: response.jwt})
+    
+                    let cookies = await chrome.cookies.getAll({url: backendBaseURL})
+                    console.log("Cookies:", cookies)
+                    
+                    if(chrome.runtime.lastError){
+                        console.log("Chrome experienced error:", chrome.runtime.lastError)
+                        return false
+                    }else{
+                        chrome.tabs.onUpdated.addListener(onStoreListener)
+                        return true
+                    }
                 }
-            })
-            .catch((error) => {
-                var errorCode = error.code;
-                var errorMessage = error.message;
-
-                console.log(error)
+            }).catch((err) => {
                 return false
-            });
+            })
         }
     })
 }
@@ -135,33 +70,21 @@ const loginToEQL = async (userDetails) => {
 const searchAPIRequest = async (url) => {
     return chrome.cookies.get({url: backendBaseURL, name:"eql_strapi_jwt"}).then((cookie) => {
         if(!cookie){
-            return initExtension()
-        }
-
-        return cookie
-    }).then((cookie) => {
-        if(!cookie){
             throw "Unreachable unless the server down searchAPIRequset"
         }
-
-        return null
-    }).then(() => {
+        return cookie
+    }).then((cookie) => {
         if(!url){
             return []
         }else{
+            console.log("Searching domain", url)
             return fetch(backendBaseURL + "api/domains?search=" + url)
-            .then((res) => {
+            .then(async (res) => {
                 if(res.status == 403 || res.status == 401){
-                    console.log("Status code 403, rerunning")
-                    initExtension().then((result) => {
-                        if(result){
-                            return searchAPIRequest(url)
-                        }else{
-                            return []
-                        }
-                    })
+                    throw `${res.status} status code on SearchApiRequest`
                 }
 
+                console.log("Got response from search")
                 return res.json()
             }).catch((err) => {
                 console.log("Error on search api request ", err)
@@ -173,9 +96,11 @@ const searchAPIRequest = async (url) => {
 
 const getOffersForUser = (url) => {
     return searchAPIRequest(url).then(async (offers) => {
+        console.log("getOffersForUser recieved offers", offers)
+
         return chrome.cookies.get({url: backendBaseURL, name:"eql_strapi_jwt"}).then((cookie) => {
             if(!cookie){
-                return initExtension()
+                throw "Unreachable unless the server down searchAPIRequset"
             }
 
             return cookie
@@ -192,6 +117,7 @@ const getOffersForUser = (url) => {
             let userCaRedeem = []
 
             for (const offer of offers){
+                console.log("Getting uses remaining for", offer)
                 await fetch(backendBaseURL + "api/uses-remaining?" + new URLSearchParams({
                     offerKey: offer.offer_key,
                     memberKey: cookie.value
@@ -311,7 +237,7 @@ const offerCodeEntry = (code) => {
     }
 
     if(!selectedInput){
-        return 1
+        return "No input found"
     }else{
         for (let index = 0; index < buttons.length; index++) {
             const button = buttons[index];
@@ -328,7 +254,7 @@ const offerCodeEntry = (code) => {
         }
 
         if(!selectedButton){
-            return 2
+            return "No button found"
         }
     }
 
@@ -336,7 +262,7 @@ const offerCodeEntry = (code) => {
 }
 
 const userRedeemOffer = async (offer, reInitOnFail) => {
-    
+    console.log("Attempting to redeem", offer)
     if(!offer){
         return false
     }
@@ -349,6 +275,8 @@ const userRedeemOffer = async (offer, reInitOnFail) => {
                         offerKey: offer.offer_key,
                         memberKey: cookie.value
                 })).then(async (res) => {
+                    console.log("Redeem offer response:", offer)
+
                     if((res.status == 403 || res.status == 401) && reInitOnFail){
                         initExtension().then((result) => {
                             if(result){
@@ -370,6 +298,7 @@ const userRedeemOffer = async (offer, reInitOnFail) => {
             }
         })
         .catch((err) => {
+            console.log("User redeem error", err)
             return false
         })
     })
@@ -384,6 +313,7 @@ const navigationsOnDomain = {dom: "", navs: 0}
 var modalMesageChange = false
 const onStoreListener = (tabId, changeInfo, newTab) => { 
     const finish = async () => {
+        console.log("onStoreListener: call finish")
         return readFromChromeStorage('offer').then((selectedOfferData) => {
             return readFromChromeStorage('storeName').then((selectedOfferStoreName) => {
                 return getStoreName().then((currentStoreName) => {
@@ -395,6 +325,7 @@ const onStoreListener = (tabId, changeInfo, newTab) => {
                         }).then((injectionResults) => {
                             return injectionResults[0].result
                         }).then((codeEntryFailed) => {
+                            console.log("onStoreListener: Offer code entry res: ", codeEntryFailed)
                             if(codeEntryFailed){
                                 //TODO: If this didnt work then tell the user the code is copied and to insert manually
                                 statusForModal['color'] = "#1B1B1B"
@@ -407,6 +338,7 @@ const onStoreListener = (tabId, changeInfo, newTab) => {
                             return [true, codeEntryFailed]
                         })
                     }else{
+                        console.log("onStoreListener: finish end (false)")
                         return false
                     }
                 })
@@ -425,7 +357,7 @@ const onStoreListener = (tabId, changeInfo, newTab) => {
         }
         
         if(navigationsOnDomain.dom == domain){
-                navigationsOnDomain.navs++
+            navigationsOnDomain.navs++
         }else{
             navigationsOnDomain.dom = domain
             navigationsOnDomain.navs = 0
@@ -434,11 +366,14 @@ const onStoreListener = (tabId, changeInfo, newTab) => {
         }
 
         if(changeInfo.status == "complete"){
+            //TODO: There's no need to call the domains, we'll search on every site
             await fetch(backendBaseURL + "api/domains")
             .then((res) => {return res.json()})
             .then(async (domains) => {
                 if(domains.join(' ').includes(domain)){
+                    console.log("onStoreListener: found domain in domains")
                     finish().then((result) => {
+                        console.log("onStoreListener: finish() result", result)
                         if(!result[0]){
                             readFromChromeStorage('offer').then((selectedOfferData) => {
                                 readFromChromeStorage('storeName').then((selectedOfferStoreName) => { 
@@ -492,6 +427,7 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
             }
         })
         .then(async (url) => {
+            console.log("Frontend requested offers for", url)
             return await getOffersForUser(url)
         })
         .then((data) => {
@@ -506,18 +442,21 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
             return true;
         })
     }else if(req.email){
+        console.log("Login requested from frontend", req)
         loginToEQL(req)
         .then((loggedIn) => {
             if(loggedIn){
+                console.log("User is logged in!")
                 sendResponse('mk')
             }else{
+                console.log("User is not logged in :(")
                 sendResponse(null)
             }
         }).catch((err) => {
             console.log("Error on login", err)
             sendResponse(null)
         })
-        
+
         return true;
     }else if(req == 'logged in'){
         chrome.cookies.get({url: backendBaseURL, name:"eql_user_member_key"})
@@ -528,12 +467,13 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
         logout()
     }
     else if(req.resetEmail){
+        console.log("Password reset requested from frontend")
         firebase.auth().sendPasswordResetEmail(req.resetEmail)
         .then(() => {
             sendResponse(null)
         })
         .catch((error) => {
-
+            console.log("Error on password reset", error)
             sendResponse(1)
         });
     }else if(req == 'store name'){
@@ -585,6 +525,7 @@ chrome.runtime.onMessage.addListener((req,sender,sendResponse) => {
         });
 
     }else if(req == "status for modal"){
+        console.log("Status for modal requested from frontend")
         sendResponse(statusForModal)
     }
     
